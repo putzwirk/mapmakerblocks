@@ -1,11 +1,12 @@
 {
-  "block.mapmakerblocks.invisible_tripwire_hook": "Invisible Tripwire Hook",
-  "block.mapmakerblocks.invisible_tripwire": "Invisible Tripwire",
   "block.mapmakerblocks.invisible_player_pressure_plate": "Invisible Player Pressure Plate",
   "block.mapmakerblocks.invisible_checkpoint_pressure_plate": "Invisible Checkpoint Pressure Plate",
   "block.mapmakerblocks.invisible_checkpoint_pressure_plate.set": "Checkpoint set!",
   "block.mapmakerblocks.silent_invisible_sculk_sensor": "Silent Invisible Sculk Sensor",
+  "block.mapmakerblocks.playerfinder": "Playerfinder",
   "item.mapmakerblocks.block_visualizer": "Block Visualizer",
   "item.mapmakerblocks.block_visualizer.desc": "Hold in hand to see all invisible blocks",
+  "item.mapmakerblocks.playerfinder": "Playerfinder",
+  "item.mapmakerblocks.playerfinder.desc": "Invisible, phase-through detector. Emits a 1-tick redstone pulse when a player passes through.",
   "itemGroup.mapmakerblocks.mapmaker_tab": "MapMaker Blocks"
 }

@@ -1,11 +1,12 @@
 {
-  "block.mapmakerblocks.invisible_tripwire_hook": "Невидимый натяжной крюк",
-  "block.mapmakerblocks.invisible_tripwire": "Невидимая растяжка",
   "block.mapmakerblocks.invisible_player_pressure_plate": "Невидимая нажимная плита для игроков",
   "block.mapmakerblocks.invisible_checkpoint_pressure_plate": "Невидимая нажимная плита чекпоинта",
   "block.mapmakerblocks.invisible_checkpoint_pressure_plate.set": "Чекпоинт установлен!",
   "block.mapmakerblocks.silent_invisible_sculk_sensor": "Бесшумный невидимый скалк-сенсор",
+  "block.mapmakerblocks.playerfinder": "Искатель игроков",
   "item.mapmakerblocks.block_visualizer": "Визуализатор блоков",
   "item.mapmakerblocks.block_visualizer.desc": "Держите в руке, чтобы видеть все невидимые блоки",
+  "item.mapmakerblocks.playerfinder": "Искатель игроков",
+  "item.mapmakerblocks.playerfinder.desc": "Невидимый, проходимый детектор. Посылает 1-тиковый сигнал редстоуна, когда игрок проходит сквозь него.",
   "itemGroup.mapmakerblocks.mapmaker_tab": "MapMaker Blocks"
 }

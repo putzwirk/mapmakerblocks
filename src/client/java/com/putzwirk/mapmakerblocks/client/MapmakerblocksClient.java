@@ -9,8 +9,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.PressurePlateBlock;
 import net.minecraft.block.SculkSensorBlock;
-import net.minecraft.block.TripwireBlock;
-import net.minecraft.block.TripwireHookBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.Camera;
@@ -32,9 +30,8 @@ public class MapmakerblocksClient implements ClientModInitializer {
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
                 ModBlocks.INVISIBLE_PLAYER_PRESSURE_PLATE,
                 ModBlocks.INVISIBLE_CHECKPOINT_PRESSURE_PLATE,
-                ModBlocks.INVISIBLE_TRIPWIRE_HOOK,
-                ModBlocks.INVISIBLE_TRIPWIRE,
-                ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR
+                ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR,
+                ModBlocks.PLAYERFINDER
         );
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
@@ -100,25 +97,13 @@ public class MapmakerblocksClient implements ClientModInitializer {
             return Blocks.OAK_PRESSURE_PLATE.getDefaultState().with(PressurePlateBlock.POWERED, state.get(PressurePlateBlock.POWERED));
         } else if (block == ModBlocks.INVISIBLE_CHECKPOINT_PRESSURE_PLATE) {
             return Blocks.WARPED_PRESSURE_PLATE.getDefaultState().with(PressurePlateBlock.POWERED, state.get(PressurePlateBlock.POWERED));
-        } else if (block == ModBlocks.INVISIBLE_TRIPWIRE_HOOK) {
-            return Blocks.TRIPWIRE_HOOK.getDefaultState()
-                    .with(TripwireHookBlock.FACING, state.get(TripwireHookBlock.FACING))
-                    .with(TripwireHookBlock.ATTACHED, state.get(TripwireHookBlock.ATTACHED))
-                    .with(TripwireHookBlock.POWERED, state.get(TripwireHookBlock.POWERED));
-        } else if (block == ModBlocks.INVISIBLE_TRIPWIRE) {
-            return Blocks.TRIPWIRE.getDefaultState()
-                    .with(TripwireBlock.ATTACHED, state.get(TripwireBlock.ATTACHED))
-                    .with(TripwireBlock.POWERED, state.get(TripwireBlock.POWERED))
-                    .with(TripwireBlock.DISARMED, state.get(TripwireBlock.DISARMED))
-                    .with(TripwireBlock.NORTH, state.get(TripwireBlock.NORTH))
-                    .with(TripwireBlock.EAST, state.get(TripwireBlock.EAST))
-                    .with(TripwireBlock.SOUTH, state.get(TripwireBlock.SOUTH))
-                    .with(TripwireBlock.WEST, state.get(TripwireBlock.WEST));
         } else if (block == ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR) {
             return Blocks.SCULK_SENSOR.getDefaultState()
                     .with(SculkSensorBlock.SCULK_SENSOR_PHASE, state.get(SculkSensorBlock.SCULK_SENSOR_PHASE))
                     .with(SculkSensorBlock.POWER, state.get(SculkSensorBlock.POWER))
                     .with(SculkSensorBlock.WATERLOGGED, state.get(SculkSensorBlock.WATERLOGGED));
+        } else if (block == ModBlocks.PLAYERFINDER) {
+            return Blocks.SLIME_BLOCK.getDefaultState();
         }
         return null;
     }

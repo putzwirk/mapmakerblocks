@@ -18,12 +18,6 @@ import java.util.Set;
 
 public class ModBlocks {
 
-    public static final SilentTripwireHookBlock INVISIBLE_TRIPWIRE_HOOK = registerBlock("invisible_tripwire_hook",
-            new SilentTripwireHookBlock(FabricBlockSettings.copyOf(Blocks.TRIPWIRE_HOOK).nonOpaque()));
-
-    public static final SilentTripwireBlock INVISIBLE_TRIPWIRE = registerBlock("invisible_tripwire",
-            new SilentTripwireBlock(INVISIBLE_TRIPWIRE_HOOK, FabricBlockSettings.copyOf(Blocks.TRIPWIRE).nonOpaque()));
-
     public static final InvisiblePlayerPressurePlateBlock INVISIBLE_PLAYER_PRESSURE_PLATE = registerBlock("invisible_player_pressure_plate",
             new InvisiblePlayerPressurePlateBlock(FabricBlockSettings.copyOf(Blocks.OAK_PRESSURE_PLATE).nonOpaque()));
 
@@ -32,6 +26,9 @@ public class ModBlocks {
 
     public static final SilentSculkSensorBlock SILENT_INVISIBLE_SCULK_SENSOR = registerBlock("silent_invisible_sculk_sensor",
             new SilentSculkSensorBlock(FabricBlockSettings.copyOf(Blocks.SCULK_SENSOR).nonOpaque()));
+
+    public static final PlayerfinderBlock PLAYERFINDER = registerBlock("playerfinder",
+            new PlayerfinderBlock(FabricBlockSettings.copyOf(Blocks.SLIME_BLOCK).nonOpaque().noCollision()));
 
     public static final BlockVisualizerItem BLOCK_VISUALIZER = registerItem("block_visualizer",
             new BlockVisualizerItem(new Item.Settings().maxCount(1)));

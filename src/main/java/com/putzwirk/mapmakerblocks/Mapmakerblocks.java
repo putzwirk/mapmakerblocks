@@ -21,8 +21,7 @@ public class Mapmakerblocks implements ModInitializer {
                     .entries((displayContext, entries) -> {
                         entries.add(ModBlocks.INVISIBLE_PLAYER_PRESSURE_PLATE);
                         entries.add(ModBlocks.INVISIBLE_CHECKPOINT_PRESSURE_PLATE);
-                        entries.add(ModBlocks.INVISIBLE_TRIPWIRE_HOOK);
-                        entries.add(ModBlocks.INVISIBLE_TRIPWIRE);
+                        entries.add(ModBlocks.PLAYERFINDER);
                         entries.add(ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR);
                         entries.add(ModBlocks.BLOCK_VISUALIZER);
                     })
