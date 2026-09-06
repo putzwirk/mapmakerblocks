@@ -1,0 +1,15 @@
+{
+  "block.mmblocks.silent_invisible_sculk_sensor": "Безшумний невидимий скалковий сенсор",
+  "block.mmblocks.playerfinder": "Гравцешукач",
+  "block.mmblocks.one_time_playerfinder": "Одноразовий гравцешукач",
+  "item.mmblocks.block_visualizer": "Візуалізатор блоків",
+  "item.mmblocks.block_visualizer.desc": "Тримайте в руці, щоб бачити всі невидимі блоки",
+  "item.mmblocks.playerfinder": "Гравцешукач",
+  "item.mmblocks.playerfinder.desc": "Невидимий, прохідний блок. Подає сигнал на всю мережу, поки гравець усередині.",
+  "item.mmblocks.one_time_playerfinder": "Одноразовий гравцешукач",
+  "item.mmblocks.one_time_playerfinder.desc": "Невидимий, одноразовий детектор. Подає сигнал редстоуну та самознищується після спрацьовування.",
+  "itemGroup.mmblocks.mapmaker_tab": "MapMaker Blocks",
+  "block.mmblocks.wireless_redstone_sign": "Бездротовий знак редстоуну",
+  "item.mmblocks.wireless_redstone_sign": "Бездротовий знак редстоуну",
+  "item.mmblocks.wireless_redstone_sign.desc": "Встановіть два або більше знаки з однаковим текстом. Коли один отримує сигнал редстоуну, всі знаки на тому ж каналі випромінюють сигнал силою 15."
+}

@@ -1,0 +1,15 @@
+{
+  "block.mmblocks.silent_invisible_sculk_sensor": "Silent Invisible Sculk Sensor",
+  "block.mmblocks.playerfinder": "Playerfinder",
+  "block.mmblocks.one_time_playerfinder": "One-Time Playerfinder",
+  "item.mmblocks.block_visualizer": "Block Visualizer",
+  "item.mmblocks.block_visualizer.desc": "Hold in hand to see all invisible blocks",
+  "item.mmblocks.playerfinder": "Playerfinder",
+  "item.mmblocks.playerfinder.desc": "Invisible, passable block. Powers connected network while a player is inside.",
+  "item.mmblocks.one_time_playerfinder": "One-Time Playerfinder",
+  "item.mmblocks.one_time_playerfinder.desc": "Invisible, single-use detector. Emits a redstone signal and destroys itself once triggered.",
+  "itemGroup.mmblocks.mapmaker_tab": "MapMaker Blocks",
+  "block.mmblocks.wireless_redstone_sign": "Wireless Redstone Sign",
+  "item.mmblocks.wireless_redstone_sign": "Wireless Redstone Sign",
+  "item.mmblocks.wireless_redstone_sign.desc": "Place two or more signs with the same text. When one receives a redstone signal, all signs on the same channel emit a 15-strength signal."
+}

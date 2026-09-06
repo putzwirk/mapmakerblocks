@@ -1,0 +1,15 @@
+{
+  "block.mmblocks.silent_invisible_sculk_sensor": "Бесшумный невидимый скалк-сенсор",
+  "block.mmblocks.playerfinder": "Искатель игроков",
+  "block.mmblocks.one_time_playerfinder": "Одноразовый искатель игроков",
+  "item.mmblocks.block_visualizer": "Визуализатор блоков",
+  "item.mmblocks.block_visualizer.desc": "Держите в руке, чтобы видеть все невидимые блоки",
+  "item.mmblocks.playerfinder": "Искатель игроков",
+  "item.mmblocks.playerfinder.desc": "Невидимый, проходимый блок. Подаёт сигнал на всю сеть, пока игрок внутри.",
+  "item.mmblocks.one_time_playerfinder": "Одноразовый искатель игроков",
+  "item.mmblocks.one_time_playerfinder.desc": "Невидимый, одноразовый детектор. Подаёт сигнал редстоуна и самоуничтожается после срабатывания.",
+  "itemGroup.mmblocks.mapmaker_tab": "MapMaker Blocks",
+  "block.mmblocks.wireless_redstone_sign": "Беспроводной знак редстоуна",
+  "item.mmblocks.wireless_redstone_sign": "Беспроводной знак редстоуна",
+  "item.mmblocks.wireless_redstone_sign.desc": "Установите два или более знака с одинаковым текстом. Когда один получает сигнал редстоуна, все знаки на том же канале излучают сигнал силой 15."
+}
