@@ -31,5 +31,6 @@ public class Mapmakerblocks implements ModInitializer {
     @Override
     public void onInitialize() {
         ModBlocks.registerModBlocks();
+        PlayerfinderManager.register();
     }
 }
