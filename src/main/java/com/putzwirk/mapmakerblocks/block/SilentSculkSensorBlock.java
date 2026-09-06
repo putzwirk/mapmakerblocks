@@ -47,6 +47,16 @@ public class SilentSculkSensorBlock extends SculkSensorBlock {
     }
 
     @Override
+    public net.minecraft.util.shape.VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, net.minecraft.block.ShapeContext context) {
+        if (context instanceof net.minecraft.block.EntityShapeContext entityContext && entityContext.getEntity() instanceof net.minecraft.entity.player.PlayerEntity player) {
+            if (player.isCreative()) {
+                return super.getOutlineShape(state, world, pos, context);
+            }
+        }
+        return net.minecraft.util.shape.VoxelShapes.empty();
+    }
+
+    @Override
     public void setActive(@Nullable Entity entity, World world, BlockPos pos, BlockState state, int power, int frequency) {
         world.setBlockState(pos, state.with(SCULK_SENSOR_PHASE, SculkSensorPhase.ACTIVE).with(POWER, power), Block.NOTIFY_ALL);
         world.scheduleBlockTick(pos, state.getBlock(), this.getCooldownTime());

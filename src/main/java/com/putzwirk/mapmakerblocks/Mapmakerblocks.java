@@ -10,20 +10,20 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class Mapmakerblocks implements ModInitializer {
-    public static final String MOD_ID = "mapmakerblocks";
+    public static final String MOD_ID = "mmblocks";
 
     public static final ItemGroup MM_TAB = Registry.register(
             Registries.ITEM_GROUP,
             new Identifier(MOD_ID, "mapmaker_tab"),
             FabricItemGroup.builder()
                     .displayName(Text.literal("MapMaker Blocks"))
-                    .icon(() -> new ItemStack(ModBlocks.INVISIBLE_PLAYER_PRESSURE_PLATE))
+                    .icon(() -> new ItemStack(ModBlocks.PLAYERFINDER))
                     .entries((displayContext, entries) -> {
-                        entries.add(ModBlocks.INVISIBLE_PLAYER_PRESSURE_PLATE);
-                        entries.add(ModBlocks.INVISIBLE_CHECKPOINT_PRESSURE_PLATE);
-                        entries.add(ModBlocks.PLAYERFINDER);
-                        entries.add(ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR);
                         entries.add(ModBlocks.BLOCK_VISUALIZER);
+                        entries.add(ModBlocks.PLAYERFINDER);
+                        entries.add(ModBlocks.ONE_TIME_PLAYERFINDER);
+                        entries.add(ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR);
+                        entries.add(ModBlocks.WIRELESS_REDSTONE_SIGN);
                     })
                     .build()
     );
@@ -32,5 +32,6 @@ public class Mapmakerblocks implements ModInitializer {
     public void onInitialize() {
         ModBlocks.registerModBlocks();
         PlayerfinderManager.register();
+        WirelessSignManager.register();
     }
 }

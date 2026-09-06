@@ -18,13 +18,9 @@ public class PlayerfinderManager {
 
     private static PlayerfinderManager INSTANCE = new PlayerfinderManager();
 
-    private static final Direction[] AXES = {Direction.UP, Direction.DOWN, Direction.EAST, Direction.WEST};
-    private static final int POWER_DURATION_TICKS = 2;
+    private static final Direction[] AXES = Direction.values();
 
-    private final WeakHashMap<ServerPlayerEntity, NetworkEntry> playerState = new WeakHashMap<>();
-    private final Map<ServerWorld, Map<BlockPos, Long>> poweredUntil = new HashMap<>();
-
-    private record NetworkEntry(BlockPos canonical, Set<BlockPos> members, ServerWorld world) {}
+    private final Map<ServerWorld, Set<BlockPos>> poweredBlocks = new HashMap<>();
 
     private PlayerfinderManager() {}
 
@@ -36,81 +32,136 @@ public class PlayerfinderManager {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> INSTANCE = new PlayerfinderManager());
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            PlayerfinderManager mgr = INSTANCE;
-            mgr.tickPowerOff(server);
-            mgr.tickPlayerDeparture(server);
+            INSTANCE.tickPlayerDeparture(server);
         });
     }
 
-    private void tickPowerOff(MinecraftServer server) {
-        for (ServerWorld world : server.getWorlds()) {
-            Map<BlockPos, Long> worldMap = poweredUntil.get(world);
-            if (worldMap == null || worldMap.isEmpty()) continue;
-            long now = world.getTime();
-            worldMap.entrySet().removeIf(entry -> {
-                if (now >= entry.getValue()) {
-                    BlockPos pos = entry.getKey();
-                    updateAllNeighbors(world, pos);
-                    return true;
-                }
-                return false;
-            });
-        }
-    }
+    private static final int ONE_TIME_PULSE_TICKS = 2;
+    private final Map<ServerWorld, Map<BlockPos, Long>> removalScheduled = new HashMap<>();
 
     private void tickPlayerDeparture(MinecraftServer server) {
-        if (server.getTicks() % 2 != 0) return;
-        playerState.entrySet().removeIf(entry -> {
-            ServerPlayerEntity player = entry.getKey();
-            NetworkEntry ne = entry.getValue();
-            return player.isRemoved() || !isPlayerInNetwork(player, ne.members(), ne.world());
-        });
+        for (ServerWorld world : server.getWorlds()) {
+            long now = world.getTime();
+
+            // Process removal of one-time playerfinder blocks whose pulse finished
+            Map<BlockPos, Long> worldRemoval = removalScheduled.get(world);
+            if (worldRemoval != null && !worldRemoval.isEmpty()) {
+                worldRemoval.entrySet().removeIf(entry -> {
+                    if (now >= entry.getValue()) {
+                        BlockPos pos = entry.getKey();
+                        if (world.getBlockState(pos).isOf(ModBlocks.ONE_TIME_PLAYERFINDER)) {
+                            world.removeBlock(pos, false);
+                        }
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
+            Set<BlockPos> occupiedBlocks = new HashSet<>();
+
+            for (ServerPlayerEntity player : world.getPlayers()) {
+                if (player.isRemoved() || player.isSpectator()) continue;
+                Box playerBox = player.getBoundingBox();
+                int minX = (int) Math.floor(playerBox.minX);
+                int maxX = (int) Math.floor(playerBox.maxX);
+                int minY = (int) Math.floor(playerBox.minY);
+                int maxY = (int) Math.floor(playerBox.maxY);
+                int minZ = (int) Math.floor(playerBox.minZ);
+                int maxZ = (int) Math.floor(playerBox.maxZ);
+
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        for (int z = minZ; z <= maxZ; z++) {
+                            BlockPos pos = new BlockPos(x, y, z);
+                            BlockState state = world.getBlockState(pos);
+                            if (isFinderBlock(state)) {
+                                Box blockBox = new Box(pos);
+                                if (playerBox.intersects(blockBox)) {
+                                    occupiedBlocks.add(pos);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Set<BlockPos> targetPowered = new HashSet<>();
+            Set<BlockPos> visited = new HashSet<>();
+
+            for (BlockPos pos : occupiedBlocks) {
+                if (!visited.contains(pos)) {
+                    BlockState state = world.getBlockState(pos);
+                    net.minecraft.block.Block blockType = state.getBlock();
+                    Set<BlockPos> net = buildNetwork(world, pos, blockType);
+                    visited.addAll(net);
+                    targetPowered.addAll(net);
+
+                    if (blockType == ModBlocks.ONE_TIME_PLAYERFINDER) {
+                        Map<BlockPos, Long> remMap = removalScheduled.computeIfAbsent(world, w -> new HashMap<>());
+                        for (BlockPos netPos : net) {
+                            remMap.putIfAbsent(netPos, now + ONE_TIME_PULSE_TICKS);
+                        }
+                    }
+                }
+            }
+
+            // Also keep scheduled one-time blocks powered until they are removed
+            if (worldRemoval != null) {
+                for (Map.Entry<BlockPos, Long> entry : worldRemoval.entrySet()) {
+                    if (now < entry.getValue() && world.getBlockState(entry.getKey()).isOf(ModBlocks.ONE_TIME_PLAYERFINDER)) {
+                        targetPowered.add(entry.getKey());
+                    }
+                }
+            }
+
+            Set<BlockPos> currentlyPowered = poweredBlocks.get(world);
+            if (currentlyPowered == null) {
+                currentlyPowered = new HashSet<>();
+                poweredBlocks.put(world, currentlyPowered);
+            }
+
+            Set<BlockPos> toDeactivate = new HashSet<>(currentlyPowered);
+            toDeactivate.removeAll(targetPowered);
+
+            Set<BlockPos> toActivate = new HashSet<>(targetPowered);
+            toActivate.removeAll(currentlyPowered);
+
+            for (BlockPos pos : toDeactivate) {
+                currentlyPowered.remove(pos);
+                updateAllNeighbors(world, pos);
+            }
+
+            for (BlockPos pos : toActivate) {
+                currentlyPowered.add(pos);
+                updateAllNeighbors(world, pos);
+            }
+        }
     }
 
     public void onCollide(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
-        NetworkEntry current = playerState.get(player);
-
-        if (current != null && current.world() == world && current.members().contains(pos)) {
-            return;
-        }
-
-        Set<BlockPos> network = buildNetwork(world, pos);
-        BlockPos canonical = network.stream()
-                .min(Comparator.comparingLong(BlockPos::asLong))
-                .orElse(pos);
-
-        if (current != null && current.world() == world && current.canonical().equals(canonical)) {
-            return;
-        }
-
-        playerState.put(player, new NetworkEntry(canonical, network, world));
-        activateNetwork(world, network);
+        // Handled via tick for full synchronization across network
     }
 
     public boolean isPowered(ServerWorld world, BlockPos pos) {
-        Map<BlockPos, Long> worldMap = poweredUntil.get(world);
-        if (worldMap == null) return false;
-        Long until = worldMap.get(pos);
-        return until != null && world.getTime() < until;
+        Set<BlockPos> set = poweredBlocks.get(world);
+        return set != null && set.contains(pos);
     }
 
-    private void activateNetwork(ServerWorld world, Set<BlockPos> network) {
-        long deadline = world.getTime() + POWER_DURATION_TICKS;
-        Map<BlockPos, Long> worldMap = poweredUntil.computeIfAbsent(world, w -> new HashMap<>());
-        for (BlockPos pos : network) {
-            worldMap.put(pos, deadline);
-            updateAllNeighbors(world, pos);
-        }
+    private static boolean isFinderBlock(BlockState state) {
+        return state.isOf(ModBlocks.PLAYERFINDER) || state.isOf(ModBlocks.ONE_TIME_PLAYERFINDER);
     }
 
     private static void updateAllNeighbors(ServerWorld world, BlockPos pos) {
-        world.updateNeighborsAlways(pos, ModBlocks.PLAYERFINDER);
+        BlockState state = world.getBlockState(pos);
+        net.minecraft.block.Block block = isFinderBlock(state) ? state.getBlock() : ModBlocks.PLAYERFINDER;
+        world.updateNeighborsAlways(pos, block);
         for (Direction direction : Direction.values()) {
-            world.updateNeighborsAlways(pos.offset(direction), ModBlocks.PLAYERFINDER);
+            world.updateNeighborsAlways(pos.offset(direction), block);
         }
     }
 
-    private static Set<BlockPos> buildNetwork(ServerWorld world, BlockPos origin) {
+    private static Set<BlockPos> buildNetwork(ServerWorld world, BlockPos origin, net.minecraft.block.Block type) {
         Set<BlockPos> visited = new HashSet<>();
         Queue<BlockPos> queue = new ArrayDeque<>();
         queue.add(origin);
@@ -120,7 +171,7 @@ public class PlayerfinderManager {
             BlockPos current = queue.poll();
             for (Direction dir : AXES) {
                 BlockPos neighbor = current.offset(dir);
-                if (!visited.contains(neighbor) && world.getBlockState(neighbor).isOf(ModBlocks.PLAYERFINDER)) {
+                if (!visited.contains(neighbor) && world.getBlockState(neighbor).isOf(type)) {
                     visited.add(neighbor);
                     queue.add(neighbor);
                 }
@@ -128,18 +179,5 @@ public class PlayerfinderManager {
         }
 
         return visited;
-    }
-
-    private static boolean isPlayerInNetwork(ServerPlayerEntity player, Set<BlockPos> network, ServerWorld world) {
-        if (player.getWorld() != world) return false;
-        Box playerBox = player.getBoundingBox();
-        for (BlockPos netPos : network) {
-            if (!world.getBlockState(netPos).isOf(ModBlocks.PLAYERFINDER)) continue;
-            Box blockBox = new Box(netPos);
-            if (playerBox.intersects(blockBox)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

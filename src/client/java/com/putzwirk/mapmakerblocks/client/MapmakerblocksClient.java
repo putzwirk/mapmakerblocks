@@ -28,10 +28,10 @@ public class MapmakerblocksClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
-                ModBlocks.INVISIBLE_PLAYER_PRESSURE_PLATE,
-                ModBlocks.INVISIBLE_CHECKPOINT_PRESSURE_PLATE,
                 ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR,
-                ModBlocks.PLAYERFINDER
+                ModBlocks.PLAYERFINDER,
+                ModBlocks.ONE_TIME_PLAYERFINDER,
+                ModBlocks.WIRELESS_REDSTONE_SIGN
         );
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
@@ -93,17 +93,15 @@ public class MapmakerblocksClient implements ClientModInitializer {
 
     private static BlockState getVisualState(BlockState state) {
         Block block = state.getBlock();
-        if (block == ModBlocks.INVISIBLE_PLAYER_PRESSURE_PLATE) {
-            return Blocks.OAK_PRESSURE_PLATE.getDefaultState().with(PressurePlateBlock.POWERED, state.get(PressurePlateBlock.POWERED));
-        } else if (block == ModBlocks.INVISIBLE_CHECKPOINT_PRESSURE_PLATE) {
-            return Blocks.WARPED_PRESSURE_PLATE.getDefaultState().with(PressurePlateBlock.POWERED, state.get(PressurePlateBlock.POWERED));
-        } else if (block == ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR) {
+        if (block == ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR) {
             return Blocks.SCULK_SENSOR.getDefaultState()
                     .with(SculkSensorBlock.SCULK_SENSOR_PHASE, state.get(SculkSensorBlock.SCULK_SENSOR_PHASE))
                     .with(SculkSensorBlock.POWER, state.get(SculkSensorBlock.POWER))
                     .with(SculkSensorBlock.WATERLOGGED, state.get(SculkSensorBlock.WATERLOGGED));
         } else if (block == ModBlocks.PLAYERFINDER) {
             return Blocks.SLIME_BLOCK.getDefaultState();
+        } else if (block == ModBlocks.ONE_TIME_PLAYERFINDER) {
+            return Blocks.HONEY_BLOCK.getDefaultState();
         }
         return null;
     }

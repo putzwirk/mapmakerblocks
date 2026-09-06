@@ -44,7 +44,12 @@ public class PlayerfinderBlock extends Block {
 
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, net.minecraft.block.ShapeContext context) {
-        return OUTLINE_SHAPE;
+        if (context instanceof net.minecraft.block.EntityShapeContext entityContext && entityContext.getEntity() instanceof net.minecraft.entity.player.PlayerEntity player) {
+            if (player.isCreative()) {
+                return OUTLINE_SHAPE;
+            }
+        }
+        return VoxelShapes.empty();
     }
 
     @Override
@@ -69,5 +74,10 @@ public class PlayerfinderBlock extends Block {
     @Override
     public boolean emitsRedstonePower(BlockState state) {
         return true;
+    }
+
+    @Override
+    public void appendTooltip(net.minecraft.item.ItemStack stack, @org.jetbrains.annotations.Nullable BlockView world, java.util.List<net.minecraft.text.Text> tooltip, net.minecraft.client.item.TooltipContext options) {
+        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.playerfinder.desc").formatted(net.minecraft.util.Formatting.GRAY));
     }
 }
