@@ -3,12 +3,12 @@ package com.putzwirk.mapmakerblocks;
 import com.putzwirk.mapmakerblocks.block.PlayerfinderBlock;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
@@ -50,9 +50,7 @@ public class PlayerfinderManager {
             worldMap.entrySet().removeIf(entry -> {
                 if (now >= entry.getValue()) {
                     BlockPos pos = entry.getKey();
-                    if (world.getBlockState(pos).isOf(ModBlocks.PLAYERFINDER)) {
-                        world.updateNeighborsAlways(pos, ModBlocks.PLAYERFINDER);
-                    }
+                    updateAllNeighbors(world, pos);
                     return true;
                 }
                 return false;
@@ -61,11 +59,11 @@ public class PlayerfinderManager {
     }
 
     private void tickPlayerDeparture(MinecraftServer server) {
-        if (server.getTicks() % 5 != 0) return;
+        if (server.getTicks() % 2 != 0) return;
         playerState.entrySet().removeIf(entry -> {
             ServerPlayerEntity player = entry.getKey();
             NetworkEntry ne = entry.getValue();
-            return !isPlayerInNetwork(player.getPos(), ne.members(), ne.world());
+            return player.isRemoved() || !isPlayerInNetwork(player, ne.members(), ne.world());
         });
     }
 
@@ -100,10 +98,15 @@ public class PlayerfinderManager {
         long deadline = world.getTime() + POWER_DURATION_TICKS;
         Map<BlockPos, Long> worldMap = poweredUntil.computeIfAbsent(world, w -> new HashMap<>());
         for (BlockPos pos : network) {
-            if (world.getBlockState(pos).isOf(ModBlocks.PLAYERFINDER)) {
-                worldMap.put(pos, deadline);
-                world.updateNeighborsAlways(pos, ModBlocks.PLAYERFINDER);
-            }
+            worldMap.put(pos, deadline);
+            updateAllNeighbors(world, pos);
+        }
+    }
+
+    private static void updateAllNeighbors(ServerWorld world, BlockPos pos) {
+        world.updateNeighborsAlways(pos, ModBlocks.PLAYERFINDER);
+        for (Direction direction : Direction.values()) {
+            world.updateNeighborsAlways(pos.offset(direction), ModBlocks.PLAYERFINDER);
         }
     }
 
@@ -117,7 +120,7 @@ public class PlayerfinderManager {
             BlockPos current = queue.poll();
             for (Direction dir : AXES) {
                 BlockPos neighbor = current.offset(dir);
-                if (!visited.contains(neighbor) && world.getBlockState(neighbor).getBlock() instanceof PlayerfinderBlock) {
+                if (!visited.contains(neighbor) && world.getBlockState(neighbor).isOf(ModBlocks.PLAYERFINDER)) {
                     visited.add(neighbor);
                     queue.add(neighbor);
                 }
@@ -127,13 +130,13 @@ public class PlayerfinderManager {
         return visited;
     }
 
-    private static boolean isPlayerInNetwork(Vec3d playerPos, Set<BlockPos> network, ServerWorld world) {
+    private static boolean isPlayerInNetwork(ServerPlayerEntity player, Set<BlockPos> network, ServerWorld world) {
+        if (player.getWorld() != world) return false;
+        Box playerBox = player.getBoundingBox();
         for (BlockPos netPos : network) {
             if (!world.getBlockState(netPos).isOf(ModBlocks.PLAYERFINDER)) continue;
-            double dx = playerPos.x - (netPos.getX() + 0.5);
-            double dy = playerPos.y - (netPos.getY() + 0.5);
-            double dz = playerPos.z - (netPos.getZ() + 0.5);
-            if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 1.0 && Math.abs(dz) <= 0.5) {
+            Box blockBox = new Box(netPos);
+            if (playerBox.intersects(blockBox)) {
                 return true;
             }
         }
