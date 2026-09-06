@@ -1,0 +1,11 @@
+{
+  "block.mapmakerblocks.invisible_tripwire_hook": "Невидимий натяжний гак",
+  "block.mapmakerblocks.invisible_tripwire": "Невидима розтяжка",
+  "block.mapmakerblocks.invisible_player_pressure_plate": "Невидима натискна плита для гравців",
+  "block.mapmakerblocks.invisible_checkpoint_pressure_plate": "Невидима натискна плита чекпоінту",
+  "block.mapmakerblocks.invisible_checkpoint_pressure_plate.set": "Чекпоінт встановлено!",
+  "block.mapmakerblocks.silent_invisible_sculk_sensor": "Безшумний невидимий скалковий сенсор",
+  "item.mapmakerblocks.block_visualizer": "Візуалізатор блоків",
+  "item.mapmakerblocks.block_visualizer.desc": "Тримайте в руці, щоб бачити всі невидимі блоки",
+  "itemGroup.mapmakerblocks.mapmaker_tab": "MapMaker Blocks"
+}

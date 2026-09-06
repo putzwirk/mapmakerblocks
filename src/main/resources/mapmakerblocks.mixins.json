@@ -2,7 +2,9 @@
   "required": true,
   "package": "com.putzwirk.mapmakerblocks.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [],
+  "mixins": [
+    "BlockEntityTypeAccessor"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
