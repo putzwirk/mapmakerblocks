@@ -4,26 +4,38 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
 
 import java.util.*;
 
 public class PlayerfinderBlock extends Block {
 
+    public static final BooleanProperty POWERED = BooleanProperty.of("powered");
+
+    private static final VoxelShape OUTLINE_SHAPE = Block.createCuboidShape(0, 0, 0, 16, 16, 16);
+
     private static final Map<BlockPos, Set<BlockPos>> networkMap = new HashMap<>();
-    private static final Map<UUID, Long> playerLastSignalTick = new HashMap<>();
     private static final Map<UUID, Boolean> playerInsideNetwork = new HashMap<>();
 
     public PlayerfinderBlock(Settings settings) {
         super(settings);
+        setDefaultState(getStateManager().getDefaultState().with(POWERED, false));
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(POWERED);
     }
 
     @Override
@@ -48,7 +60,7 @@ public class PlayerfinderBlock extends Block {
 
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, net.minecraft.block.ShapeContext context) {
-        return VoxelShapes.empty();
+        return OUTLINE_SHAPE;
     }
 
     @Override
@@ -64,10 +76,11 @@ public class PlayerfinderBlock extends Block {
             Set<BlockPos> oldNetwork = networkMap.remove(pos);
             if (oldNetwork != null) {
                 oldNetwork.remove(pos);
-                for (BlockPos neighbor : oldNetwork) {
+                for (BlockPos neighbor : new HashSet<>(oldNetwork)) {
                     rebuildNetwork(world, neighbor);
                 }
             }
+            world.updateNeighborsAlways(pos, this);
         }
         super.onStateReplaced(state, world, pos, newState, moved);
     }
@@ -101,25 +114,20 @@ public class PlayerfinderBlock extends Block {
         if (world.isClient || !(entity instanceof ServerPlayerEntity player)) return;
 
         UUID uuid = player.getUuid();
-        long currentTick = world.getTime();
         Set<BlockPos> network = networkMap.getOrDefault(pos, new HashSet<>(Set.of(pos)));
 
-        boolean isInsideAny = isPlayerInsideNetwork(player, network, world);
-
+        boolean isInsideAny = isPlayerInsideNetwork(player, network);
         boolean wasInside = playerInsideNetwork.getOrDefault(uuid, false);
 
         if (isInsideAny && !wasInside) {
             playerInsideNetwork.put(uuid, true);
-            if (playerLastSignalTick.getOrDefault(uuid, -100L) != currentTick) {
-                playerLastSignalTick.put(uuid, currentTick);
-                emitNetworkSignal(world, network, currentTick);
-            }
+            activateNetwork(world, network);
         } else if (!isInsideAny) {
             playerInsideNetwork.put(uuid, false);
         }
     }
 
-    private boolean isPlayerInsideNetwork(ServerPlayerEntity player, Set<BlockPos> network, World world) {
+    private boolean isPlayerInsideNetwork(ServerPlayerEntity player, Set<BlockPos> network) {
         Vec3d playerPos = player.getPos();
         for (BlockPos netPos : network) {
             double dx = playerPos.x - (netPos.getX() + 0.5);
@@ -132,26 +140,33 @@ public class PlayerfinderBlock extends Block {
         return false;
     }
 
-    private void emitNetworkSignal(World world, Set<BlockPos> network, long tick) {
+    private void activateNetwork(World world, Set<BlockPos> network) {
         for (BlockPos netPos : network) {
-            world.updateNeighborsAlways(netPos, this);
-            world.scheduleBlockTick(netPos, this, 1);
+            BlockState current = world.getBlockState(netPos);
+            if (current.isOf(this) && !current.get(POWERED)) {
+                world.setBlockState(netPos, current.with(POWERED, true), Block.NOTIFY_ALL);
+                world.updateNeighborsAlways(netPos, this);
+                world.scheduleBlockTick(netPos, this, 2);
+            }
         }
     }
 
     @Override
-    public void scheduledTick(BlockState state, net.minecraft.server.world.ServerWorld world, BlockPos pos, net.minecraft.util.math.random.Random random) {
-        world.updateNeighborsAlways(pos, this);
+    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        if (state.get(POWERED)) {
+            world.setBlockState(pos, state.with(POWERED, false), Block.NOTIFY_ALL);
+            world.updateNeighborsAlways(pos, this);
+        }
     }
 
     @Override
     public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return 15;
+        return state.get(POWERED) ? 15 : 0;
     }
 
     @Override
     public int getStrongRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return 15;
+        return state.get(POWERED) ? 15 : 0;
     }
 
     @Override
