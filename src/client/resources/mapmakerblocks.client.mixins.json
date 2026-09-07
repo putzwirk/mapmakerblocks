@@ -2,7 +2,10 @@
   "required": true,
   "package": "com.putzwirk.mapmakerblocks.client.mixin",
   "compatibilityLevel": "JAVA_17",
-  "client": [],
+  "client": [
+    "ScreenInvoker",
+    "SignEditScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

@@ -26,18 +26,26 @@ public class WirelessRedstoneSignBlock extends SignBlock {
 
     public static final BooleanProperty POWERED = Properties.POWERED;
 
+    // true = INPUT: this sign DETECTS a wired redstone signal (e.g. from a lever) and
+    // broadcasts it wirelessly on its channel (sign text).
+    // false = OUTPUT: this sign EMITS a 15-strength redstone signal while any matching
+    // INPUT sign broadcasts.
+    public static final BooleanProperty INPUT = BooleanProperty.of("input");
+
     public WirelessRedstoneSignBlock(Settings settings) {
         super(settings, WoodType.MANGROVE);
         setDefaultState(getStateManager().getDefaultState()
                 .with(ROTATION, 0)
                 .with(WATERLOGGED, false)
-                .with(POWERED, false));
+                .with(POWERED, false)
+                .with(INPUT, true));
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
         builder.add(POWERED);
+        builder.add(INPUT);
     }
 
     @Override
@@ -73,6 +81,8 @@ public class WirelessRedstoneSignBlock extends SignBlock {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        // Open the vanilla sign editor (text acts as the matching ID) - the Input/Output
+        // buttons are added to that screen by the SignEditScreenMixin.
         ActionResult result = super.onUse(state, world, pos, player, hand, hit);
         if (!world.isClient) {
             WirelessSignManager.get().onNeighborUpdate((ServerWorld) world, pos);

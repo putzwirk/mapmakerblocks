@@ -11,5 +11,7 @@
   "itemGroup.mmblocks.mapmaker_tab": "MapMaker Blocks",
   "block.mmblocks.wireless_redstone_sign": "Wireless Redstone Sign",
   "item.mmblocks.wireless_redstone_sign": "Wireless Redstone Sign",
-  "item.mmblocks.wireless_redstone_sign.desc": "Place two or more signs with the same text. When one receives a redstone signal, all signs on the same channel emit a 15-strength signal."
+  "item.mmblocks.wireless_redstone_sign.desc": "Right-click to edit its text and switch between Input and Output. When an Input sign detects a redstone signal, every Output sign with the same text emits a 15-strength signal.",
+  "gui.mmblocks.wireless_sign.mode.input": "Input (detect)",
+  "gui.mmblocks.wireless_sign.mode.output": "Output (emit)"
 }

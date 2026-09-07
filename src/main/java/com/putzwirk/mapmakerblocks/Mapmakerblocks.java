@@ -9,6 +9,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import com.putzwirk.mapmakerblocks.networking.WirelessSignPackets;
+
 public class Mapmakerblocks implements ModInitializer {
     public static final String MOD_ID = "mmblocks";
 
@@ -33,5 +35,6 @@ public class Mapmakerblocks implements ModInitializer {
         ModBlocks.registerModBlocks();
         PlayerfinderManager.register();
         WirelessSignManager.register();
+        WirelessSignPackets.registerServer();
     }
 }

@@ -11,5 +11,7 @@
   "itemGroup.mmblocks.mapmaker_tab": "MapMaker Blocks",
   "block.mmblocks.wireless_redstone_sign": "Бездротовий знак редстоуну",
   "item.mmblocks.wireless_redstone_sign": "Бездротовий знак редстоуну",
-  "item.mmblocks.wireless_redstone_sign.desc": "Встановіть два або більше знаки з однаковим текстом. Коли один отримує сигнал редстоуну, всі знаки на тому ж каналі випромінюють сигнал силою 15."
+  "item.mmblocks.wireless_redstone_sign.desc": "ПКМ, щоб відредагувати текст і перемкнути режим: Вхід або Вихід. Коли знак у режимі Вхід отримує сигнал редстоуну, усі знаки в режимі Вихід з таким самим текстом випромінюють сигнал силою 15.",
+  "gui.mmblocks.wireless_sign.mode.input": "Вхід (приймає)",
+  "gui.mmblocks.wireless_sign.mode.output": "Вихід (випромінює)"
 }
