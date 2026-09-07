@@ -1,0 +1,35 @@
+{
+  "variants": {
+    "facing=north,output_powered=false": {
+      "model": "mmblocks:block/redstone_timer"
+    },
+    "facing=south,output_powered=false": {
+      "model": "mmblocks:block/redstone_timer",
+      "y": 180
+    },
+    "facing=west,output_powered=false": {
+      "model": "mmblocks:block/redstone_timer",
+      "y": 270
+    },
+    "facing=east,output_powered=false": {
+      "model": "mmblocks:block/redstone_timer",
+      "y": 90
+    },
+
+    "facing=north,output_powered=true": {
+      "model": "mmblocks:block/redstone_timer_on"
+    },
+    "facing=south,output_powered=true": {
+      "model": "mmblocks:block/redstone_timer_on",
+      "y": 180
+    },
+    "facing=west,output_powered=true": {
+      "model": "mmblocks:block/redstone_timer_on",
+      "y": 270
+    },
+    "facing=east,output_powered=true": {
+      "model": "mmblocks:block/redstone_timer_on",
+      "y": 90
+    }
+  }
+}

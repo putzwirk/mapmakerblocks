@@ -26,10 +26,6 @@ public class WirelessRedstoneSignBlock extends SignBlock {
 
     public static final BooleanProperty POWERED = Properties.POWERED;
 
-    // true = INPUT: this sign DETECTS a wired redstone signal (e.g. from a lever) and
-    // broadcasts it wirelessly on its channel (sign text).
-    // false = OUTPUT: this sign EMITS a 15-strength redstone signal while any matching
-    // INPUT sign broadcasts.
     public static final BooleanProperty INPUT = BooleanProperty.of("input");
 
     public WirelessRedstoneSignBlock(Settings settings) {
@@ -81,8 +77,6 @@ public class WirelessRedstoneSignBlock extends SignBlock {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        // Open the vanilla sign editor (text acts as the matching ID) - the Input/Output
-        // buttons are added to that screen by the SignEditScreenMixin.
         ActionResult result = super.onUse(state, world, pos, player, hand, hit);
         if (!world.isClient) {
             WirelessSignManager.get().onNeighborUpdate((ServerWorld) world, pos);
@@ -106,7 +100,11 @@ public class WirelessRedstoneSignBlock extends SignBlock {
                               @Nullable BlockView world,
                               java.util.List<net.minecraft.text.Text> tooltip,
                               net.minecraft.client.item.TooltipContext options) {
-        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.wireless_redstone_sign.desc")
+        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.wireless_redstone_sign.desc.1")
+                .formatted(net.minecraft.util.Formatting.GRAY));
+        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.wireless_redstone_sign.desc.2")
+                .formatted(net.minecraft.util.Formatting.GRAY));
+        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.wireless_redstone_sign.desc.3")
                 .formatted(net.minecraft.util.Formatting.GRAY));
     }
 }

@@ -1,0 +1,25 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "mmblocks:block/redstone_timer_side",
+    "top": "mmblocks:block/redstone_timer_top",
+    "bottom": "mmblocks:block/redstone_timer_bottom",
+    "front": "mmblocks:block/redstone_timer_front",
+    "back": "mmblocks:block/redstone_timer_back_off",
+    "side": "mmblocks:block/redstone_timer_side"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#front" },
+        "south": { "texture": "#back" },
+        "east": { "texture": "#side" },
+        "west": { "texture": "#side" },
+        "up": { "texture": "#top" },
+        "down": { "texture": "#bottom" }
+      }
+    }
+  ]
+}

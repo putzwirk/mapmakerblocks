@@ -7,10 +7,6 @@ import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-/**
- * Gives the sign editor mixin access to Screen#addDrawableChild, which is inherited from
- * Screen and therefore cannot be @Shadow-ed from a mixin targeting AbstractSignEditScreen.
- */
 @Mixin(Screen.class)
 public interface ScreenInvoker {
 

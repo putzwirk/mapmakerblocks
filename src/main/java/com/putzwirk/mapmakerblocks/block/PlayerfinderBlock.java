@@ -78,6 +78,7 @@ public class PlayerfinderBlock extends Block {
 
     @Override
     public void appendTooltip(net.minecraft.item.ItemStack stack, @org.jetbrains.annotations.Nullable BlockView world, java.util.List<net.minecraft.text.Text> tooltip, net.minecraft.client.item.TooltipContext options) {
-        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.playerfinder.desc").formatted(net.minecraft.util.Formatting.GRAY));
+        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.playerfinder.desc.1").formatted(net.minecraft.util.Formatting.GRAY));
+        tooltip.add(net.minecraft.text.Text.translatable("item.mmblocks.playerfinder.desc.2").formatted(net.minecraft.util.Formatting.GRAY));
     }
 }

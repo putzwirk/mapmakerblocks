@@ -9,10 +9,16 @@ import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import com.putzwirk.mapmakerblocks.block.entity.ModBlockEntities;
+import com.putzwirk.mapmakerblocks.networking.ModMessages;
 import com.putzwirk.mapmakerblocks.networking.WirelessSignPackets;
+import com.putzwirk.mapmakerblocks.screen.ModScreenHandlers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Mapmakerblocks implements ModInitializer {
     public static final String MOD_ID = "mmblocks";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final ItemGroup MM_TAB = Registry.register(
             Registries.ITEM_GROUP,
@@ -26,6 +32,7 @@ public class Mapmakerblocks implements ModInitializer {
                         entries.add(ModBlocks.ONE_TIME_PLAYERFINDER);
                         entries.add(ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR);
                         entries.add(ModBlocks.WIRELESS_REDSTONE_SIGN);
+                        entries.add(ModBlocks.REDSTONE_TIMER);
                     })
                     .build()
     );
@@ -33,6 +40,9 @@ public class Mapmakerblocks implements ModInitializer {
     @Override
     public void onInitialize() {
         ModBlocks.registerModBlocks();
+        ModBlockEntities.registerBlockEntities();
+        ModScreenHandlers.registerScreenHandlers();
+        ModMessages.registerC2SPackets();
         PlayerfinderManager.register();
         WirelessSignManager.register();
         WirelessSignPackets.registerServer();

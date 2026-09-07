@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "minecraft:cobblestone"
+    },
+    "W": {
+      "item": "minecraft:clock"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CWC",
+    "CRC"
+  ],
+  "result": {
+    "item": "mmblocks:redstone_timer",
+    "count": 1
+  }
+}

@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.block.entity.SignText;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,13 +38,9 @@ public class WirelessSignManager {
     public static void register() {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> INSTANCE = new WirelessSignManager());
 
-        // Chunks loaded from disk (including when a server starts) never fire
-        // onBlockAdded/neighborUpdate, so rediscover signs by scanning chunks as they load.
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> INSTANCE.onChunkLoad(world, chunk));
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> INSTANCE.onChunkUnload(world, chunk));
 
-        // Safety net: re-scan whatever a world already has loaded the moment it comes up
-        // (spawn region), in case its chunks were loaded before the chunk events fired.
         ServerWorldEvents.LOAD.register((server, world) -> INSTANCE.onWorldLoad(world));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> INSTANCE.tick(server));
@@ -55,9 +53,6 @@ public class WirelessSignManager {
     private final Set<ServerWorld> worldsNeedingUpdate = new HashSet<>();
     private boolean isRecalculating = false;
 
-    // Recalculate regularly even when no redstone event reached a sign. While an Input
-    // (receiver) sign emits, its own output keeps the adjacent dust lit, which masks the
-    // neighbor update that would otherwise tell us a transmitter lost its lever signal.
     private static final int RECALC_INTERVAL = 5;
 
     public void onNeighborUpdate(ServerWorld world, BlockPos pos) {
@@ -69,7 +64,6 @@ public class WirelessSignManager {
         }
     }
 
-    /** Called on the server when a player picks a mode in the sign GUI. */
     public void setMode(ServerWorld world, BlockPos pos, boolean input) {
         if (!isWirelessSign(world, pos)) return;
         BlockState state = world.getBlockState(pos);
@@ -89,10 +83,6 @@ public class WirelessSignManager {
     private void onChunkLoad(ServerWorld world, WorldChunk chunk) {
         boolean found = false;
         for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
-            // Query the state straight off the chunk, NOT via world.getBlockState: that
-            // routes through ServerChunkManager.getChunkFutureMainThread and would block the
-            // server thread waiting on the very chunk full-future still being promoted
-            // here, deadlocking during world load.
             if (entry.getValue() instanceof SignBlockEntity
                     && chunk.getBlockState(entry.getKey()).isOf(ModBlocks.WIRELESS_REDSTONE_SIGN)) {
                 knownSigns.computeIfAbsent(world, w -> new HashSet<>()).add(entry.getKey().toImmutable());
@@ -135,34 +125,28 @@ public class WirelessSignManager {
 
             known.removeIf(pos -> !isWirelessSign(world, pos));
 
-            // Snapshot the set: setPoweredState below triggers neighbor updates, and a sign
-            // reactivated by that redstone signal calls onNeighborUpdate, which must not mutate
-            // the collection we are iterating.
             List<BlockPos> positions = new ArrayList<>(known);
 
-            // An Input (detector) sign broadcasts its channel (sign text) while it receives
-            // a physical redstone signal.
-            Set<String> activeChannels = new HashSet<>();
+            for (BlockPos pos : positions) {
+                ensureGlowing(world, pos);
+            }
+
+            Set<String> activeLines = new HashSet<>();
             for (BlockPos pos : positions) {
                 if (isInputSign(world, pos) && hasRedstoneInput(world, pos)) {
-                    activeChannels.add(getChannel(world, pos));
+                    activeLines.addAll(getChannels(world, pos));
                 }
             }
 
-            // Output (emitter) signs whose channel matches a broadcasting Input sign are
-            // powered and emit strength-15 redstone. Input signs never get POWERED, so only
-            // Output signs physically emit redstone.
             Set<BlockPos> targetPowered = new HashSet<>();
-            if (!activeChannels.isEmpty()) {
+            if (!activeLines.isEmpty()) {
                 for (BlockPos pos : positions) {
-                    if (!isInputSign(world, pos) && activeChannels.contains(getChannel(world, pos))) {
+                    if (!isInputSign(world, pos) && !Collections.disjoint(activeLines, getChannels(world, pos))) {
                         targetPowered.add(pos);
                     }
                 }
             }
 
-            // Apply only the deltas against the real block state. This also self-heals a stale
-            // POWERED=true left over in chunk data from a previous session.
             for (BlockPos pos : positions) {
                 boolean shouldPower = targetPowered.contains(pos);
                 boolean isPowered = world.getBlockState(pos).get(WirelessRedstoneSignBlock.POWERED);
@@ -183,29 +167,35 @@ public class WirelessSignManager {
         return world.getBlockState(pos).isOf(ModBlocks.WIRELESS_REDSTONE_SIGN);
     }
 
-    /** true = INPUT mode: this sign detects a wired redstone signal and broadcasts it. */
+    private static void ensureGlowing(ServerWorld world, BlockPos pos) {
+        if (!(world.getBlockEntity(pos) instanceof SignBlockEntity signBE)) return;
+        if (signBE.getFrontText().isGlowing() && signBE.getBackText().isGlowing()) return;
+        signBE.setText(signBE.getFrontText().withGlowing(true), true);
+        signBE.setText(signBE.getBackText().withGlowing(true), false);
+    }
+
     private static boolean isInputSign(ServerWorld world, BlockPos pos) {
         return world.getBlockState(pos).get(WirelessRedstoneSignBlock.INPUT);
     }
 
-    /** The sign's front text acts as the channel ID that pairs senders with receivers. */
-    private static String getChannel(ServerWorld world, BlockPos pos) {
-        if (!(world.getBlockEntity(pos) instanceof SignBlockEntity signBE)) {
-            return "";
+    private static Set<String> getChannels(ServerWorld world, BlockPos pos) {
+        Set<String> channels = new HashSet<>();
+        if (world.getBlockEntity(pos) instanceof SignBlockEntity signBE) {
+            collectChannels(signBE.getFrontText(), channels);
+            collectChannels(signBE.getBackText(), channels);
         }
-        String channel = "";
-        for (int i = 0; i < 4; i++) {
-            channel = channel.concat(signBE.getFrontText().getMessage(i, false).getString().strip());
-        }
-        return channel;
+        return channels;
     }
 
-    /**
-     * True when the sign receives a physical redstone signal from a non-wireless-sign source.
-     * Wireless signs are always skipped here, so one sign can never power another sign's input
-     * through wires - broadcasts only flow through this manager. This is what stops a pair of
-     * signs connected by dust from latching permanently on when the lever is removed.
-     */
+    private static void collectChannels(SignText text, Set<String> into) {
+        for (int i = 0; i < 4; i++) {
+            String line = text.getMessage(i, false).getString().strip();
+            if (!line.isEmpty()) {
+                into.add(line);
+            }
+        }
+    }
+
     private static boolean hasRedstoneInput(ServerWorld world, BlockPos pos) {
         for (Direction dir : Direction.values()) {
             BlockPos neighbour = pos.offset(dir);
@@ -220,18 +210,12 @@ public class WirelessSignManager {
                     return true;
                 }
             } else if (world.getEmittedRedstonePower(neighbour, dir.getOpposite()) > 0) {
-                // Direct non-wire power sources (levers, repeaters, torches, powered blocks).
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * A dust block only counts as a real input when some non-wireless-sign block feeds power
-     * into it (a lever, torch, repeater or another dust). Dust lit solely by wireless signs -
-     * i.e. a receiver's output - is ignored.
-     */
     private static boolean dustFedByExternalSource(ServerWorld world, BlockPos dustPos) {
         for (Direction dir : Direction.values()) {
             BlockPos source = dustPos.offset(dir);

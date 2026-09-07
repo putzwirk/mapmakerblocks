@@ -17,6 +17,7 @@ public class OneTimePlayerfinderBlock extends PlayerfinderBlock {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
-        tooltip.add(Text.translatable("item.mmblocks.one_time_playerfinder.desc").formatted(Formatting.GRAY));
+        tooltip.add(Text.translatable("item.mmblocks.one_time_playerfinder.desc.1").formatted(Formatting.GRAY));
+        tooltip.add(Text.translatable("item.mmblocks.one_time_playerfinder.desc.2").formatted(Formatting.GRAY));
     }
 }

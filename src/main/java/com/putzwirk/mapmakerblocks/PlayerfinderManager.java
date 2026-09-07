@@ -43,7 +43,6 @@ public class PlayerfinderManager {
         for (ServerWorld world : server.getWorlds()) {
             long now = world.getTime();
 
-            // Process removal of one-time playerfinder blocks whose pulse finished
             Map<BlockPos, Long> worldRemoval = removalScheduled.get(world);
             if (worldRemoval != null && !worldRemoval.isEmpty()) {
                 worldRemoval.entrySet().removeIf(entry -> {
@@ -106,7 +105,6 @@ public class PlayerfinderManager {
                 }
             }
 
-            // Also keep scheduled one-time blocks powered until they are removed
             if (worldRemoval != null) {
                 for (Map.Entry<BlockPos, Long> entry : worldRemoval.entrySet()) {
                     if (now < entry.getValue() && world.getBlockState(entry.getKey()).isOf(ModBlocks.ONE_TIME_PLAYERFINDER)) {
@@ -140,7 +138,6 @@ public class PlayerfinderManager {
     }
 
     public void onCollide(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
-        // Handled via tick for full synchronization across network
     }
 
     public boolean isPowered(ServerWorld world, BlockPos pos) {

@@ -1,9 +1,12 @@
 package com.putzwirk.mapmakerblocks.client;
 
 import com.putzwirk.mapmakerblocks.ModBlocks;
+import com.putzwirk.mapmakerblocks.client.screen.RedstoneTimerScreen;
+import com.putzwirk.mapmakerblocks.screen.ModScreenHandlers;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -27,6 +30,8 @@ import net.minecraft.util.math.Vec3d;
 public class MapmakerblocksClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        HandledScreens.register(ModScreenHandlers.REDSTONE_TIMER_SCREEN_HANDLER, RedstoneTimerScreen::new);
+
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
                 ModBlocks.SILENT_INVISIBLE_SCULK_SENSOR,
                 ModBlocks.PLAYERFINDER,

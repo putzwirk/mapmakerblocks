@@ -19,17 +19,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Adds the Input/Output mode toggle to the vanilla sign editor for wireless signs.
- * The sign text still acts as the channel ID; the button only decides whether the
- * sign broadcasts (Output) or receives (Input).
- */
 @Mixin(AbstractSignEditScreen.class)
 public abstract class SignEditScreenMixin {
 
-    // blockEntity is declared directly in the target class, so it is the only member that can
-    // be @Shadow-ed here. Inherited members (client, width, height, addDrawableChild) must be
-    // reached through MinecraftClient.getInstance(), the window or the ScreenInvoker mixin.
     @Shadow
     private SignBlockEntity blockEntity;
 
